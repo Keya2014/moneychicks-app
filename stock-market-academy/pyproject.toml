@@ -1,0 +1,12 @@
+[project]
+name = "stock-market-academy"
+version = "0.1.0"
+description = "Financial education website for women"
+dependencies = [
+    "streamlit",
+    "plotly",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
