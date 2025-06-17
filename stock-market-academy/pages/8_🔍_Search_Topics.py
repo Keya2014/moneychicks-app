@@ -20,16 +20,20 @@ def add_to_bookmarks(title, content):
         st.info("Already in bookmarks!")
 
 def search_content(query, content_data):
-    """Search through all content and return matching results, safely."""
+    """Search through all content and return matching results"""
     results = []
     query_lower = query.lower()
     
     for item in content_data:
+        # Ensure item is a dict before accessing keys
+        if not isinstance(item, dict):
+            continue
+
         # Safely get title, content, keywords
-        title = item.get('title')
-        content = item.get('content')
+        title = item.get('title', '')
+        content = item.get('content', '')
         keywords = item.get('keywords', [])
-        
+
         # Search in title
         if isinstance(title, str) and query_lower in title.lower():
             results.append({
@@ -37,19 +41,15 @@ def search_content(query, content_data):
                 'match_type': 'title',
                 'relevance': 3
             })
-            continue  # Skip to next item if already matched
-
         # Search in content
-        if isinstance(content, str) and query_lower in content.lower():
+        elif isinstance(content, str) and query_lower in content.lower():
             results.append({
                 **item,
                 'match_type': 'content', 
                 'relevance': 2
             })
-            continue
-
         # Search in keywords
-        if isinstance(keywords, list) and any(isinstance(keyword, str) and query_lower in keyword.lower() for keyword in keywords):
+        elif isinstance(keywords, list) and any(isinstance(keyword, str) and query_lower in keyword.lower() for keyword in keywords):
             results.append({
                 **item,
                 'match_type': 'keyword',
@@ -59,6 +59,7 @@ def search_content(query, content_data):
     # Sort by relevance (higher first)
     results.sort(key=lambda x: x['relevance'], reverse=True)
     return results
+
 
 def display_search_result(result):
     """Display a single search result"""
