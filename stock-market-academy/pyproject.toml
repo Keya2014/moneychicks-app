@@ -2,7 +2,7 @@
 name = "moneychicks-app"
 version = "0.1.0"
 description = "A stock market learning platform using Streamlit"
-authors = ["Keya Choudhury <your@email.com>"]
+authors = ["Keya Choudhury keyachoudhury09@gmail.com"]
 readme = "README.md"
 packages = [{include = "moneychicks_app"}]
 
