@@ -20,36 +20,43 @@ def add_to_bookmarks(title, content):
         st.info("Already in bookmarks!")
 
 def search_content(query, content_data):
-    """Search through all content and return matching results"""
+    """Search through all content and return matching results, safely."""
     results = []
     query_lower = query.lower()
     
     for item in content_data:
-        # Ensure item is a dict before accessing keys
+        # Only process items that are dicts
         if not isinstance(item, dict):
             continue
 
-        # Safely get title, content, keywords
         title = item.get('title', '')
         content = item.get('content', '')
         keywords = item.get('keywords', [])
 
+        # Ensure title and content are strings, keywords is a list
+        if not isinstance(title, str):
+            title = ''
+        if not isinstance(content, str):
+            content = ''
+        if not isinstance(keywords, list):
+            keywords = []
+
         # Search in title
-        if isinstance(title, str) and query_lower in title.lower():
+        if query_lower in title.lower():
             results.append({
                 **item,
                 'match_type': 'title',
                 'relevance': 3
             })
         # Search in content
-        elif isinstance(content, str) and query_lower in content.lower():
+        elif query_lower in content.lower():
             results.append({
                 **item,
                 'match_type': 'content', 
                 'relevance': 2
             })
         # Search in keywords
-        elif isinstance(keywords, list) and any(isinstance(keyword, str) and query_lower in keyword.lower() for keyword in keywords):
+        elif any(isinstance(keyword, str) and query_lower in keyword.lower() for keyword in keywords):
             results.append({
                 **item,
                 'match_type': 'keyword',
@@ -59,7 +66,6 @@ def search_content(query, content_data):
     # Sort by relevance (higher first)
     results.sort(key=lambda x: x['relevance'], reverse=True)
     return results
-
 
 def display_search_result(result):
     """Display a single search result"""
