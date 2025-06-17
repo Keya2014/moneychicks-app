@@ -20,27 +20,36 @@ def add_to_bookmarks(title, content):
         st.info("Already in bookmarks!")
 
 def search_content(query, content_data):
-    """Search through all content and return matching results"""
+    """Search through all content and return matching results, safely."""
     results = []
     query_lower = query.lower()
     
     for item in content_data:
+        # Safely get title, content, keywords
+        title = item.get('title')
+        content = item.get('content')
+        keywords = item.get('keywords', [])
+        
         # Search in title
-        if query_lower in item['title'].lower():
+        if isinstance(title, str) and query_lower in title.lower():
             results.append({
                 **item,
                 'match_type': 'title',
                 'relevance': 3
             })
+            continue  # Skip to next item if already matched
+
         # Search in content
-        elif query_lower in item['content'].lower():
+        if isinstance(content, str) and query_lower in content.lower():
             results.append({
                 **item,
                 'match_type': 'content', 
                 'relevance': 2
             })
+            continue
+
         # Search in keywords
-        elif any(query_lower in keyword.lower() for keyword in item.get('keywords', [])):
+        if isinstance(keywords, list) and any(isinstance(keyword, str) and query_lower in keyword.lower() for keyword in keywords):
             results.append({
                 **item,
                 'match_type': 'keyword',
@@ -245,7 +254,7 @@ def main():
         - Browse by learning level (beginner → intermediate)
         """)
     
-    # Recent searches (if we want to implement this)
+    # Recent searches
     if 'recent_searches' not in st.session_state:
         st.session_state.recent_searches = []
     
