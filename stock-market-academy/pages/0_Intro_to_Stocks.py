@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from utils.progress_tracker import ProgressTracker
 from utils.content_data import get_welcome_content
 
@@ -84,7 +85,50 @@ def main():
                 st.success(f"✅ {title}")
             else:
                 st.info(f"⏳ {title}")
+
+    # Investment Calculator Section
+    st.markdown("---")
+    st.markdown("## 💰 Investment Growth Calculator")
+    st.write("See how investing could grow your money over time!")
     
+    calc_col1, calc_col2 = st.columns([1, 2])
+    
+    with calc_col1:
+        starting_amount = st.slider("Initial Investment (₹)", 0, 1000000, 0, 1000)
+        monthly_contribution = st.slider("Monthly Contribution (₹)", 0, 200000, 2000, 500)
+        years = st.slider("Investment Horizon (years)", 1, 40, 20, 1)
+    
+    # Investment calculations
+    annual_return_safe = 0.07  # 7% safe return
+    annual_return_risky = 0.10  # 10% S&P 500 average
+    months = years * 12
+    
+    # Calculate growth scenarios
+    scenarios = {
+        'Safe Investments (7%)': annual_return_safe,
+        'S&P 500 (10%)': annual_return_risky,
+        'Not Invested': 0
+    }
+    
+    df = pd.DataFrame({'Year': [2025 + i for i in range(years)]})
+    
+    for scenario, rate in scenarios.items():
+        total = starting_amount
+        scenario_values = []
+        for year in range(years):
+            for month in range(12):
+                total += monthly_contribution
+                total *= (1 + rate/12)
+            scenario_values.append(total)
+        df[scenario] = scenario_values
+    
+    with calc_col2:
+        st.metric("Safe Investments Final Value", f"₹{df['Safe Investments (7%)'].iloc[-1]:,.0f}")
+        st.metric("S&P 500 Final Value", f"₹{df['S&P 500 (10%)'].iloc[-1]:,.0f}")
+        st.metric("Not Invested Value", f"₹{(starting_amount + monthly_contribution * months):,.0f}")
+        st.line_chart(df.set_index('Year'))
+        st.caption("Historical S&P 500 average return ~10%. Past performance ≠ future results.")
+
     # Featured content section
     st.markdown("---")
     st.markdown("## 🌟 Featured Learning Modules")
@@ -136,4 +180,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
