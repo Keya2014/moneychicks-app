@@ -107,10 +107,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- Investment Calculator Section ---
-import pandas as pd
-import streamlit as st
-
 st.markdown('<div class="section-title">📈 Why you should get started now</div>', unsafe_allow_html=True)
 st.write("See for yourself how investing outperforms savings over time!")
 
@@ -124,48 +120,39 @@ with col1:
     years = st.slider("⏳ Time horizon (years)", 1, 40, 20, 1)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Constants
-annual_return_safe = 0.07      # 7% safe investment return
-annual_return_risky = 0.10     # 10% S&P 500 long-term average
+# Investment calculation logic
+annual_return = 0.08  # 8% global average as per Female Invest
 months = years * 12
 
-# Calculate safe investment growth
-contribs_by_year_safe = [starting_amount + monthly_contribution * (12 * (i + 1)) for i in range(years)]
-returns_by_year_safe = []
-total_by_year_safe = starting_amount
-for i in range(years):
-    for _ in range(12):
-        total_by_year_safe += monthly_contribution
-        total_by_year_safe *= (1 + annual_return_safe / 12)
-    returns_by_year_safe.append(total_by_year_safe - contribs_by_year_safe[i])
-
-# Calculate risky investment growth (S&P 500 KPI)
-returns_by_year_risky = []
-total_by_year_risky = starting_amount
-for i in range(years):
-    for _ in range(12):
-        total_by_year_risky += monthly_contribution
-        total_by_year_risky *= (1 + annual_return_risky / 12)
-    returns_by_year_risky.append(total_by_year_risky - contribs_by_year_safe[i])
-
-# Calculate total if not invested (just savings)
-total_not_invested = starting_amount + monthly_contribution * months
+contributions = []
+returns = []
+total = starting_amount
+for month in range(months):
+    total += monthly_contribution
+    total *= (1 + annual_return / 12)
+    contributions.append(starting_amount + monthly_contribution * (month + 1))
+    returns.append(total - contributions[-1])
 
 years_list = [2025 + i for i in range(years)]
+contribs_by_year = [starting_amount + monthly_contribution * (12 * (i + 1)) for i in range(years)]
+returns_by_year = []
+total_by_year = starting_amount
+for i in range(years):
+    for _ in range(12):
+        total_by_year += monthly_contribution
+        total_by_year *= (1 + annual_return / 12)
+    returns_by_year.append(total_by_year - contribs_by_year[i])
 
-# Create DataFrame with all data
-df_compare = pd.DataFrame({
+df = pd.DataFrame({
     "Year": years_list,
-    "Safe Investment": [contribs_by_year_safe[i] + returns_by_year_safe[i] for i in range(years)],
-    "S&P 500 (Risky)": [contribs_by_year_safe[i] + returns_by_year_risky[i] for i in range(years)],
-    "Not Invested": [total_not_invested for _ in range(years)]
+    "Contributions": contribs_by_year,
+    "Returns": returns_by_year
 })
 
 with col2:
-    st.metric("Total if Invested (Safe)", f"₹{df_compare['Safe Investment'].iloc[-1]:,.0f}")
-    st.metric("Total if Invested (S&P 500)", f"₹{df_compare['S&P 500 (Risky)'].iloc[-1]:,.0f}")
-    st.metric("Total if Not Invested", f"₹{df_compare['Not Invested'].iloc[-1]:,.0f}")
-    st.line_chart(df_compare.set_index("Year"))
+    st.metric("Total if Invested", f"₹{(df['Contributions'].iloc[-1] + df['Returns'].iloc[-1]):,.0f}")
+    st.metric("Total if Not Invested", f"₹{starting_amount + monthly_contribution * months:,.0f}")
+    st.bar_chart(df.set_index("Year"))
     st.caption("This calculator is for illustrative purposes only and does not constitute financial advice.")
 
 # --- Collapsible "Understanding the Formula" Section above Financial Learning ---
@@ -197,9 +184,7 @@ with st.expander("📚 Understanding the Formula"):
 
         **EAR (Effective Annual Rate):** Useful for understanding the actual return, but less common in bank rates for loans.
         """
-    )
-
-
+    ) 
 # --- Financial Learning Section with pastel outline ---
 st.markdown(
     """
