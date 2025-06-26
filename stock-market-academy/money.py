@@ -1,4 +1,22 @@
 import streamlit as st
+import torch
+
+# Cache the model to avoid reloading and save memory
+@st.cache_resource
+def load_model():
+    return torch.load("path/to/model.pt")
+
+model = load_model()
+
+st.title("Stock Market Academy: Ask the Model")
+
+question = st.text_input("What's your question?")
+if question:
+    # Replace with your actual prediction logic
+    answer = model(question) if callable(model) else "Model not callable"
+    st.write("Predicted answer:", answer)
+
+import streamlit as st
 import pandas as pd
 import numpy as np
 
