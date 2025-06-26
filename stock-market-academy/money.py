@@ -1,20 +1,27 @@
 import streamlit as st
 import torch
 
-# Cache the model to avoid reloading and save memory
 @st.cache_resource
 def load_model():
-    return torch.load("path/to/model.pt")
+    try:
+        return torch.load("path/to/model.pt")
+    except Exception as e:
+        st.error(f"Failed to load model: {e}")
+        return None
 
 model = load_model()
 
-st.title("Stock Market Academy: Ask the Model")
+if model is None:
+    st.stop()
 
 question = st.text_input("What's your question?")
 if question:
-    # Replace with your actual prediction logic
-    answer = model(question) if callable(model) else "Model not callable"
-    st.write("Predicted answer:", answer)
+    try:
+        answer = model(question) if callable(model) else "Model not callable"
+        st.write("Predicted answer:", answer)
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
+
 
 import streamlit as st
 import pandas as pd
